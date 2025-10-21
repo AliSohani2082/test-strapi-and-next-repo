@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@repo/design-system/theme.css";
+@import "@repo/design-system/styles.css";
 @import "@repo/design-system/custom-styles.css";
 
 @plugin "tailwindcss-animate";

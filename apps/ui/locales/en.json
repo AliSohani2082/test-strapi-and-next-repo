@@ -237,4 +237,58 @@
       "submit": "Recover account"
     }
   }
+  ,
+  "hero": {
+    "features": {
+      "online_booking": "Online booking",
+      "in_person_booking": "In-person booking",
+      "emergency_consult": "Emergency consultation"
+    },
+    "cta_primary": "Book appointment",
+    "cta_secondary": "Contact us",
+    "emergency_label": "Emergency:",
+    "years_experience": "Years of experience",
+    "patients_satisfied": "Patients satisfied",
+    "image_alt": "Hero image"
+  },
+  "footer": {
+    "quick_links": "Quick links",
+    "our_services": "Our services",
+    "contact_info": "Contact information",
+    "working_hours": "Working hours",
+    "emergency_label": "Emergency:",
+    "built_with": "Built with",
+    "for_your_health": "for your health"
+  },
+  "services": {
+    "title": "Our specialized services",
+    "more_info": "More information",
+    "cta": {
+      "question": "Do you have any questions about our services?",
+      "free_consultation": "Get a free consultation"
+    }
+
+  }
+  ,
+  "doctors": {
+    "list": {
+      "title": "Clinic Doctors",
+      "subtitle": "Meet our team of medical specialists"
+    },
+    "detail": {
+      "backToList": "Back to doctors list",
+      "about": "About",
+      "education": "Education",
+      "certifications": "Certifications & Memberships",
+      "services": "Provided services",
+      "cta": "Book appointment"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Latest articles and news",
+    "back_to_blog": "Back to blog",
+    "related_articles": "Related articles",
+    "read_more": "Read more"
+  }
 }

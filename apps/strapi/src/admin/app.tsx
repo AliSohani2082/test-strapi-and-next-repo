@@ -21,6 +21,15 @@ export default {
       name: "InternalJobsRunAction",
       Component: InternalJobsRunActions,
     })
+
+    // Enforce LTR direction in Strapi admin regardless of shared global styles
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("dir", "ltr")
+      const ltrStyle = document.createElement("style")
+      ltrStyle.setAttribute("data-admin-ltr-override", "true")
+      ltrStyle.innerHTML = `html, body { direction: ltr !important; }`
+      document.head.appendChild(ltrStyle)
+    }
   },
   register() {
     setPluginConfig({ presets: [defaultCkEditorConfig] })

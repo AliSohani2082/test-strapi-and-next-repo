@@ -127,9 +127,9 @@ export async function fetchFooter(locale: AppLocale) {
     return await PublicStrapiClient.fetchOne("api::footer.footer", undefined, {
       locale,
       populate: {
-        sections: { populate: { links: true } },
-        logoImage: { populate: { image: true, link: true } },
-        links: true,
+        internalLinks: true,
+        serviceLinks: true,
+        socialMediaLinks: true,
       },
     })
   } catch (e: any) {
@@ -139,6 +139,105 @@ export async function fetchFooter(locale: AppLocale) {
         error: e?.message,
         stack: e?.stack,
       },
+    })
+  }
+}
+
+// ------ Doctors fetching functions
+
+export async function fetchDoctors(locale: AppLocale) {
+  try {
+    return await PublicStrapiClient.fetchMany("api::doctor.doctor", {
+      locale,
+      fields: ["id", "slug", "firstName", "lastName", "speciality", "about"],
+      populate: {
+        image: true,
+        education: true,
+        certifications: true,
+        services: true,
+      },
+      sort: { publishedAt: "desc" },
+      status: "published",
+    })
+  } catch (e: any) {
+    console.error({
+      message: `Error fetching doctors for locale '${locale}'`,
+      error: { error: e?.message, stack: e?.stack },
+    })
+    return { data: [] }
+  }
+}
+
+export async function fetchDoctorBySlug(slug: string, locale: AppLocale) {
+  try {
+    // Slug is a unique UID, fetch directly by slug
+    return await PublicStrapiClient.fetchOneBySlug("api::doctor.doctor", slug, {
+      locale,
+      populate: {
+        image: true,
+        education: true,
+        certifications: true,
+        services: true,
+      },
+      status: "published",
+    })
+  } catch (e: any) {
+    console.error({
+      message: `Error fetching doctor '${slug}' for locale '${locale}'`,
+      error: { error: e?.message, stack: e?.stack },
+    })
+  }
+}
+
+// ------ Blog fetching functions
+
+export async function fetchArticles(locale: AppLocale) {
+  try {
+    return await PublicStrapiClient.fetchMany("api::article.article", {
+      locale,
+      populate: {
+        poster: true,
+        author: { populate: { image: true } },
+        categories: true,
+      },
+      sort: { publishedAt: "desc" },
+      status: "published",
+    })
+  } catch (e: any) {
+    console.error({
+      message: `Error fetching articles for locale '${locale}'`,
+      error: { error: e?.message, stack: e?.stack },
+    })
+    return { data: [] }
+  }
+}
+
+export async function fetchArticleBySlug(slug: string, locale: AppLocale) {
+  try {
+    return await PublicStrapiClient.fetchOneBySlug(
+      "api::article.article",
+      slug,
+      {
+        locale,
+        populate: {
+          poster: true,
+          author: { populate: { image: true } },
+          categories: true,
+          related_from: {
+            populate: {
+              poster: true,
+              author: { populate: { image: true } },
+              categories: true,
+            },
+          },
+        },
+        status: "published",
+      }
+    )
+  } catch (e: any) {
+    console.error({
+      message: `Error fetching article '${slug}' for locale '${locale}'`,
+      error: { error: e?.message, stack: e?.stack },
     })
   }
 }

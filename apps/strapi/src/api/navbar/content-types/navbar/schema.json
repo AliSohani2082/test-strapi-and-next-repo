@@ -16,6 +16,22 @@
     }
   },
   "attributes": {
+    "company": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "slogan": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
     "links": {
       "type": "component",
       "repeatable": true,

@@ -12,6 +12,32 @@ export interface ElementsFooterItem extends Struct.ComponentSchema {
   }
 }
 
+export interface ElementsServiceItem extends Struct.ComponentSchema {
+  collectionName: "components_elements_service_items"
+  info: {
+    displayName: "ServiceItem"
+  }
+  attributes: {
+    description: Schema.Attribute.Text
+    icon: Schema.Attribute.Enumeration<
+      [
+        "Heart",
+        "Dumbbell",
+        "Brain",
+        "Shield",
+        "Stethoscope",
+        "GraduationCap",
+        "BookOpen",
+        "Globe",
+      ]
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<"Heart">
+    slug: Schema.Attribute.String & Schema.Attribute.Required
+    title: Schema.Attribute.String & Schema.Attribute.Required
+  }
+}
+
 export interface FormsContactForm extends Struct.ComponentSchema {
   collectionName: "components_forms_contact_forms"
   info: {
@@ -93,13 +119,15 @@ export interface SectionsHero extends Struct.ComponentSchema {
     displayName: "Hero"
   }
   attributes: {
-    bgColor: Schema.Attribute.String &
-      Schema.Attribute.CustomField<"plugin::color-picker.color">
+    description: Schema.Attribute.Text
+    emergencyPhone: Schema.Attribute.String
     image: Schema.Attribute.Component<"utilities.basic-image", false>
     links: Schema.Attribute.Component<"utilities.link", true>
+    patientsSatisfied: Schema.Attribute.Integer
     steps: Schema.Attribute.Component<"utilities.text", true>
     subTitle: Schema.Attribute.String
     title: Schema.Attribute.String & Schema.Attribute.Required
+    yearsExperience: Schema.Attribute.Integer
   }
 }
 
@@ -137,6 +165,26 @@ export interface SectionsImageWithCtaButton extends Struct.ComponentSchema {
     link: Schema.Attribute.Component<"utilities.link", false>
     subText: Schema.Attribute.String
     title: Schema.Attribute.String & Schema.Attribute.Required
+  }
+}
+
+export interface SectionsServices extends Struct.ComponentSchema {
+  collectionName: "components_sections_services"
+  info: {
+    description: ""
+    displayName: "Services"
+    icon: "bulletList"
+  }
+  attributes: {
+    description: Schema.Attribute.Text
+    services: Schema.Attribute.Component<"elements.service-item", true> &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1
+        },
+        number
+      >
   }
 }
 
@@ -250,6 +298,57 @@ export interface SeoUtilitiesSocialIcons extends Struct.ComponentSchema {
   }
 }
 
+export interface SharedOpenGraph extends Struct.ComponentSchema {
+  collectionName: "components_shared_open_graphs"
+  info: {
+    displayName: "openGraph"
+    icon: "project-diagram"
+  }
+  attributes: {
+    ogDescription: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200
+      }>
+    ogImage: Schema.Attribute.Media<"images">
+    ogTitle: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 70
+      }>
+    ogType: Schema.Attribute.String
+    ogUrl: Schema.Attribute.String
+  }
+}
+
+export interface SharedSeo extends Struct.ComponentSchema {
+  collectionName: "components_shared_seos"
+  info: {
+    displayName: "seo"
+    icon: "search"
+  }
+  attributes: {
+    canonicalURL: Schema.Attribute.String
+    keywords: Schema.Attribute.Text
+    metaDescription: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 160
+        minLength: 50
+      }>
+    metaImage: Schema.Attribute.Media<"images">
+    metaRobots: Schema.Attribute.String
+    metaTitle: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 60
+      }>
+    metaViewport: Schema.Attribute.String
+    openGraph: Schema.Attribute.Component<"shared.open-graph", false>
+    structuredData: Schema.Attribute.JSON
+  }
+}
+
 export interface UtilitiesAccordions extends Struct.ComponentSchema {
   collectionName: "components_utilities_accordions"
   info: {
@@ -342,6 +441,7 @@ declare module "@strapi/strapi" {
   export module Public {
     export interface ComponentSchemas {
       "elements.footer-item": ElementsFooterItem
+      "elements.service-item": ElementsServiceItem
       "forms.contact-form": FormsContactForm
       "forms.newsletter-form": FormsNewsletterForm
       "sections.animated-logo-row": SectionsAnimatedLogoRow
@@ -351,11 +451,14 @@ declare module "@strapi/strapi" {
       "sections.hero": SectionsHero
       "sections.horizontal-images": SectionsHorizontalImages
       "sections.image-with-cta-button": SectionsImageWithCtaButton
+      "sections.services": SectionsServices
       "seo-utilities.meta-social": SeoUtilitiesMetaSocial
       "seo-utilities.seo": SeoUtilitiesSeo
       "seo-utilities.seo-og": SeoUtilitiesSeoOg
       "seo-utilities.seo-twitter": SeoUtilitiesSeoTwitter
       "seo-utilities.social-icons": SeoUtilitiesSocialIcons
+      "shared.open-graph": SharedOpenGraph
+      "shared.seo": SharedSeo
       "utilities.accordions": UtilitiesAccordions
       "utilities.basic-image": UtilitiesBasicImage
       "utilities.ck-editor-content": UtilitiesCkEditorContent

@@ -7,6 +7,7 @@
     "exports": {
         "./theme.css": "./src/theme.css",
         "./styles.css": "./dist/styles.css",
+        "./clinic-theme.css": "./src/clinic-theme.css",
         "./styles-strapi.json": "./dist/styles-strapi.json",
         "./custom-styles.css": "./src/custom-styles.css",
         "./ck-color-config.json": "./dist/ckeditor-color-config.json",

@@ -1,7 +1,6 @@
 import React from "react"
 import { Data } from "@repo/strapi"
 
-import { removeThisWhenYouNeedMe } from "@/lib/general-helpers"
 import AppLink from "@/components/elementary/AppLink"
 
 export interface StrapiLinkProps {
@@ -9,6 +8,7 @@ export interface StrapiLinkProps {
   readonly children?: React.ReactNode
   readonly className?: string
   readonly hideWhenMissing?: boolean
+  readonly onClick?: React.MouseEventHandler<HTMLAnchorElement>
 }
 
 export function StrapiLink({
@@ -16,9 +16,8 @@ export function StrapiLink({
   children,
   className,
   hideWhenMissing,
+  onClick,
 }: StrapiLinkProps) {
-  removeThisWhenYouNeedMe("StrapiLink")
-
   if (component == null && hideWhenMissing) {
     return null
   }
@@ -32,6 +31,7 @@ export function StrapiLink({
       href={component.href}
       openExternalInNewTab={component.newTab ?? false}
       className={className}
+      onClick={onClick}
     >
       {children ?? component.label}
     </AppLink>

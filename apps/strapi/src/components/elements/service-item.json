@@ -1,0 +1,35 @@
+{
+  "collectionName": "components_elements_service_items",
+  "info": {
+    "displayName": "ServiceItem"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "Heart",
+        "Dumbbell",
+        "Brain",
+        "Shield",
+        "Stethoscope",
+        "GraduationCap",
+        "BookOpen",
+        "Globe"
+      ],
+      "default": "Heart",
+      "required": true
+    },
+    "slug": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

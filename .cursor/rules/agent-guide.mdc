@@ -1,0 +1,207 @@
+---
+alwaysApply: true
+---
+## Cursor Agent Guide — Strapi v5 & Next.js v15 Monorepo
+
+These rules always apply when assisting in this repository. Follow them strictly and prefer referenced modules and patterns over generic approaches.
+
+### Golden Rules
+
+- **Yarn-first**: Always use Yarn 1.x in all commands and scripts.
+  - Prefer repo scripts defined in root `package.json` and app-level scripts.
+  - Example commands: `yarn`, `yarn dev`, `yarn build`, `yarn dev:ui`, `yarn dev:strapi`.
+- **Context7 documentation**: For unknown libraries, use the Context7 MCP server.
+  - Resolve the library ID first, then fetch docs.
+  - Respect versioned IDs when available.
+- **Localization (next-intl)**: Use the `t` function from `useTranslations`/`getTranslations` for all user-visible strings.
+  - Store messages in `apps/ui/locales/*.json` and reuse existing keys when possible.
+  - Types for message keys are augmented in `apps/ui/src/types/global.d.ts`.
+- **Navigation wrappers**: Never import routing primitives from `next/navigation` directly.
+  - Use `Link`, `redirect`, `usePathname`, `useRouter` from `apps/ui/src/lib/navigation.ts`.
+  - Keep locale-aware routing intact; do not bypass `next-intl` integration.
+- **Environment variables**: Import from `apps/ui/src/env.mjs` and never read `process.env` directly in application code.
+  - Ensure required vars used at build time are listed in `turbo.json` under `globalEnv`.
+- **Strapi clients**: Fetch CMS data via typed clients in `apps/ui/src/lib/strapi-api/`.
+  - Server context: call clients directly (no proxy).
+  - Client context: set `useProxy: true` to use route handlers and keep secrets server-side.
+  - Respect `ALLOWED_STRAPI_ENDPOINTS` and `API_ENDPOINTS` mappings.
+- **Page Builder**: Render content through the dynamic route `apps/ui/src/app/[locale]/[[...rest]]/page.tsx` and component mapping in `apps/ui/src/components/page-builder/index.tsx`.
+  - Single-types like Navbar/Footer are fetched and rendered separately.
+- **Metadata & SEO**: Generate metadata via helpers in `apps/ui/src/lib/metadata/` and keep `sitemap.ts` and `robots.ts` behavior consistent with README.
+- **Error handling**: Wrap risky components with `apps/ui/src/components/elementary/ErrorBoundary.tsx` and rely on route-level `error.tsx`.
+- **Images**: Prefer provided wrappers (e.g., `ImageWithBlur`, `ImageWithFallback`) over raw `next/image` when applicable.
+- **Security**: For forms protected by reCAPTCHA v3, use `apps/ui/src/lib/recaptcha.ts` and the documented provider/hook pattern.
+
+### Repository Context
+
+- Apps:
+  - `apps/ui` — Next.js App Router 15 application (TypeScript, Tailwind v4, shadcn/ui).
+  - `apps/strapi` — Strapi v5 CMS (TypeScript, Postgres, plugins preconfigured).
+- Packages:
+  - `packages/design-system` — shared styles and CKEditor configs used by both apps.
+  - `packages/eslint-config`, `packages/prettier-config`, `packages/typescript-config`, `packages/shared-data` — shared configs and constants.
+
+### Localization Rules (next-intl)
+
+- Use `useTranslations(namespace)` in client/server components without `async`, and `getTranslations(namespace)` in `async` server components.
+- Keep translation keys in `apps/ui/locales/en.json`, `apps/ui/locales/cs.json`.
+- Add or change keys in locale files and ensure TypeScript augmentations continue to pass in `apps/ui/src/types/global.d.ts`.
+- Example usage:
+  - Client/server (non-async):
+    ```tsx
+    import { useTranslations } from "next-intl"
+    const t = useTranslations("general")
+    return <div>{t("loading")}</div>
+    ```
+  - Async server component:
+    ```tsx
+    import { getTranslations } from "next-intl/server"
+    const t = await getTranslations("ProfilePage")
+    ```
+
+### Navigation Rules (next-intl + wrappers)
+
+- Import navigation primitives from `apps/ui/src/lib/navigation.ts`:
+  ```tsx
+  import { Link, useRouter, redirect, usePathname } from "@/lib/navigation"
+  ```
+- Do not import `Link`, `redirect`, `useRouter`, or `usePathname` from `next/navigation` directly.
+- Use helpers like `formatHref`, `isAppLink`, and `getAppPublicUrl` from `apps/ui/src/lib/navigation.ts`.
+
+### Strapi Data Access Rules
+
+- Use the typed API clients in `apps/ui/src/lib/strapi-api/`.
+  - Public data: `PublicStrapiClient` (read-only); Private data/user-specific: `PrivateStrapiClient` (injects user JWT when available).
+  - Client-side requests must set `useProxy: true` to route through `apps/ui/src/app/api/public-proxy/[...slug]/route.ts` or `apps/ui/src/app/api/private-proxy/[...slug]/route.ts`.
+  - Keep `API_ENDPOINTS` and `ALLOWED_STRAPI_ENDPOINTS` up to date when introducing new content types.
+- Respect type inference based on Strapi's generated types; ensure Strapi type generation remains enabled in `apps/strapi/config/typescript.ts`.
+
+### Page Builder & SEO Rules
+
+- Render page-builder pages via `apps/ui/src/app/[locale]/[[...rest]]/page.tsx`.
+- Maintain component mapping in `apps/ui/src/components/page-builder/index.tsx` when adding new Strapi components.
+- Generate metadata using `apps/ui/src/lib/metadata/` utilities; do not duplicate SEO logic inside pages.
+- Keep `apps/ui/src/app/sitemap.ts` and `apps/ui/src/app/robots.ts` consistent with production-only behavior and ISR settings described in README.
+
+### Environment & Configuration Rules
+
+- Always import env via `apps/ui/src/env.mjs`:
+  ```ts
+  import { env } from "@/env.mjs"
+  ```
+- Ensure build-time envs are listed in `turbo.json` under `globalEnv` to make them available to Turborepo tasks.
+- For Strapi admin and backend features, keep plugin and middleware configuration in `apps/strapi/config/` and follow guidance in `apps/strapi/README.md`.
+
+### Error & Observability Rules
+
+- Wrap CMS-rendered or risky UI with `apps/ui/src/components/elementary/ErrorBoundary.tsx`.
+- Global route errors are handled by `apps/ui/src/app/[locale]/error.tsx`.
+- Sentry: follow `apps/ui/sentry.*.config.ts` and `apps/ui/src/instrumentation.ts`. Enable via env only when desired.
+
+### Images & Performance Rules
+
+- Prefer `apps/ui/src/components/elementary/ImageWithBlur.tsx` or `ImageWithFallback.tsx` over raw `next/image` when UX/perf benefits are desired.
+- Follow guidance in `apps/ui/README.md` for image configuration and caveats.
+
+### Forms & Security Rules
+
+- For reCAPTCHA v3, use `apps/ui/src/lib/recaptcha.ts` and the documented provider/hook pattern.
+- For authenticated flows, use NextAuth integration in `apps/ui/src/lib/auth.ts` and the `authMiddleware` behavior in `apps/ui/src/middleware.ts`.
+
+### Design System Rules (shared)
+
+- Import theme/styles from `@repo/design-system` in `apps/ui/src/styles/globals.css`.
+- For Strapi admin, inject styles via JSON from `@repo/design-system/styles-strapi.json` in `apps/strapi/src/admin/app.tsx`.
+- Use generated CKEditor configs from `@repo/design-system`.
+
+### Command Policy (Yarn-first)
+
+- Install: `yarn`
+- Run all apps: `yarn dev`
+- Build all apps: `yarn build`
+- App-specific: `yarn dev:ui`, `yarn dev:strapi`
+- Do not use `npm`, `pnpm`, or `npx` unless absolutely unavoidable.
+
+### Context7 MCP Documentation Policy
+
+- When a library is unfamiliar or ambiguous:
+  1) Resolve ID:
+     - Use the MCP function to resolve a Context7-compatible library ID by name.
+  2) Fetch docs:
+     - Use the resolved ID to fetch focused, up-to-date documentation for the relevant topic.
+  3) Apply locally:
+     - Conform integration to this repo’s conventions (i18n, navigation wrappers, env, typing).
+- Prefer official or high-trust sources surfaced by Context7.
+
+### File & Module References (non-exhaustive)
+
+- UI:
+  - i18n: `apps/ui/src/lib/i18n.ts`, locales: `apps/ui/locales/`, types: `apps/ui/src/types/global.d.ts`
+  - Navigation wrappers & helpers: `apps/ui/src/lib/navigation.ts`
+  - Strapi API clients: `apps/ui/src/lib/strapi-api/`
+  - Page builder route: `apps/ui/src/app/[locale]/[[...rest]]/page.tsx`
+  - Page builder mapping: `apps/ui/src/components/page-builder/index.tsx`
+  - Metadata: `apps/ui/src/lib/metadata/`
+  - Proxies: `apps/ui/src/app/api/public-proxy/[...slug]/route.ts`, `apps/ui/src/app/api/private-proxy/[...slug]/route.ts`
+  - Auth: `apps/ui/src/lib/auth.ts`, middleware: `apps/ui/src/middleware.ts`
+  - Styles: `apps/ui/src/styles/globals.css`, helper `apps/ui/src/lib/styles.ts`
+  - Images: `apps/ui/src/components/elementary/`
+  - Error boundary: `apps/ui/src/components/elementary/ErrorBoundary.tsx`
+  - reCAPTCHA: `apps/ui/src/lib/recaptcha.ts`
+- Strapi:
+  - Typescript & generated types config: `apps/strapi/config/typescript.ts`, `apps/strapi/types/generated/`
+  - Document middleware example: `apps/strapi/src/documentMiddlewares/page.ts`
+  - Hierarchy utilities: `apps/strapi/src/utils/hierarchy.ts`
+  - Plugins/middleware config: `apps/strapi/config/`
+- Shared:
+  - Design system package: `packages/design-system/`
+  - Shared data/constants: `packages/shared-data/`
+  - Turborepo config: `turbo.json`
+
+### Examples (concise)
+
+- Translated label with locale-aware link:
+  ```tsx
+  import { useTranslations } from "next-intl"
+  import { Link } from "@/lib/navigation"
+  const t = useTranslations("general")
+  return <Link href="/profile">{t("profile")}</Link>
+  ```
+
+- Server-side Strapi fetch (public):
+  ```ts
+  import { PublicStrapiClient } from "@/lib/strapi-api/public"
+  const navbar = await PublicStrapiClient.fetchOne(
+    "api::navbar.navbar",
+    undefined,
+    { locale }
+  )
+  ```
+
+- Client-side Strapi fetch via proxy:
+  ```ts
+  import { PublicStrapiClient } from "@/lib/strapi-api/public"
+  const data = await PublicStrapiClient.fetchMany(
+    "api::page.page",
+    { pagination: { page: 1, pageSize: 10 } },
+    { useProxy: true }
+  )
+  ```
+
+### Do / Don’t
+
+- Do: `import { env } from "@/env.mjs"` — Don’t: `process.env.X` in app code
+- Do: `import { Link } from "@/lib/navigation"` — Don’t: `import { Link } from "next/navigation"`
+- Do: Use `useTranslations`/`getTranslations` with keys from `apps/ui/locales` — Don’t: Hardcode UI strings
+- Do: Use Strapi clients and proxies — Don’t: Call Strapi with ad-hoc `fetch` and leaked tokens
+- Do: Update page-builder mapping when adding CMS components — Don’t: Render unknown components implicitly
+
+---
+
+For deeper context and rationale, see:
+
+- Root: `README.md`
+- UI app: `apps/ui/README.md`
+- Strapi app: `apps/strapi/README.md`
+- Design system: `packages/design-system/README.md`
+

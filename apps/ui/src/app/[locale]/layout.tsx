@@ -6,14 +6,14 @@ import { setRequestLocale } from "next-intl/server"
 
 import { LayoutProps } from "@/types/next"
 
-import { fontRoboto } from "@/lib/fonts"
+import { fontRoboto, fontSans } from "@/lib/fonts"
 import { routing } from "@/lib/navigation"
 import { cn } from "@/lib/styles"
 import { ErrorBoundary } from "@/components/elementary/ErrorBoundary"
 import StrapiPreviewListener from "@/components/elementary/StrapiPreviewListener"
 import { TailwindIndicator } from "@/components/elementary/TailwindIndicator"
 import StrapiFooter from "@/components/page-builder/single-types/footer/StrapiFooter"
-import StrapiNavbar from "@/components/page-builder/single-types/navbar/StrapiNavbar"
+import StrapiNavbar from "@/components/page-builder/single-types/navbar"
 import { ClientProviders } from "@/components/providers/ClientProviders"
 import { ServerProviders } from "@/components/providers/ServerProviders"
 import TrackingScripts from "@/components/providers/TrackingScripts"
@@ -42,12 +42,18 @@ export default async function RootLayout({ children, params }: LayoutProps) {
   setRequestLocale(locale)
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={locale === "fa" ? "rtl" : "ltr"}
+      suppressHydrationWarning
+    >
       <head />
       <body
+        suppressHydrationWarning
         className={cn(
           "min-h-screen bg-gray-100 font-sans antialiased",
-          fontRoboto.variable
+          fontRoboto.variable,
+          fontSans.className
         )}
       >
         <StrapiPreviewListener />
