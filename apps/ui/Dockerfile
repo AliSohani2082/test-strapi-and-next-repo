@@ -30,6 +30,9 @@ FROM base AS installer
 ARG APP
 ARG WORKSPACE
 
+# Prefer IPv4 DNS resolution to avoid IPv6 networking hiccups in some builders
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
+
 WORKDIR /app
 
 # First install dependencies (as they change less often)
@@ -41,12 +44,12 @@ RUN yarn global add turbo@^1.13.4
 
 RUN \
     --mount=type=cache,target=/usr/local/share/.cache/yarn/v6,sharing=locked \
-    yarn --prefer-offline --frozen-lockfile --ignore-scripts
+    yarn --prefer-offline --frozen-lockfile --ignore-scripts --network-timeout 600000 --network-concurrency 2
 
 # Because of yarn v1 install sharp explicitly with "--ignore-engines". See https://github.com/lovell/sharp/issues/3871
 RUN \
     --mount=type=cache,target=/usr/local/share/.cache/yarn/v6,sharing=locked \
-    yarn workspace ${WORKSPACE} add sharp --ignore-engines --prefer-offline --frozen-lockfile
+    yarn workspace ${WORKSPACE} add sharp --ignore-engines --prefer-offline --frozen-lockfile --network-timeout 600000 --network-concurrency 2
 
 # Build the project and its dependencies
 COPY --from=pruned /app/out/full/ .
@@ -61,6 +64,9 @@ FROM base AS runner
 ARG APP
 ARG WORKSPACE
 ENV NODE_ENV=production
+
+# Prefer IPv4 DNS resolution
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
 
 RUN apk update && apk add --no-cache vips-dev
 

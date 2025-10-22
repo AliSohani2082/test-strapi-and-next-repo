@@ -32,6 +32,9 @@ ARG APP
 ARG WORKSPACE
 ENV NODE_ENV=production
 
+# Prefer IPv4 DNS resolution to avoid IPv6 issues in some builders
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
+
 WORKDIR /app
 
 # Install system dependencies for Strapi
@@ -47,7 +50,7 @@ RUN yarn global add turbo@^1.13.4
 # see https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/reference.md#run---mounttypecache
 RUN \
     --mount=type=cache,target=/usr/local/share/.cache/yarn/v6,sharing=locked \
-    yarn --prefer-offline --frozen-lockfile --ignore-scripts --production
+    yarn --prefer-offline --frozen-lockfile --ignore-scripts --production --network-timeout 600000 --network-concurrency 2
 
 # Because of yarn v1 install sharp explicitly with "--ignore-engines". See https://github.com/lovell/sharp/issues/3871
 RUN \
@@ -67,6 +70,9 @@ FROM base AS runner
 ARG APP
 ARG WORKSPACE
 ENV NODE_ENV=production
+
+# Prefer IPv4 DNS resolution
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
 
 RUN apk update && apk add --no-cache vips-dev
 
