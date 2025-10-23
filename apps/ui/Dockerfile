@@ -57,6 +57,15 @@ COPY turbo.json turbo.json
 
 ENV NODE_ENV=production
 
+# Provide required build-time env vars for Next.js build
+# These are read by apps/ui/src/env.mjs during `next build`
+ARG APP_PUBLIC_URL
+ARG STRAPI_URL
+ARG STRAPI_REST_READONLY_API_KEY
+ENV APP_PUBLIC_URL=$APP_PUBLIC_URL \
+    STRAPI_URL=$STRAPI_URL \
+    STRAPI_REST_READONLY_API_KEY=$STRAPI_REST_READONLY_API_KEY
+
 RUN turbo run build --filter=${WORKSPACE}
 
 # -------------------------- stage runner ---------------------------------
@@ -87,4 +96,8 @@ COPY --from=installer --chown=nextjs:nextjs /app/apps/${APP}/public ./apps/${APP
 
 WORKDIR /app/apps/${APP}
 EXPOSE ${PORT:-3000}
+# Ensure runtime also has these env vars when needed (usually configured by the platform)
+ENV APP_PUBLIC_URL=${APP_PUBLIC_URL} \
+    STRAPI_URL=${STRAPI_URL} \
+    STRAPI_REST_READONLY_API_KEY=${STRAPI_REST_READONLY_API_KEY}
 CMD ["node", "server.js"]
