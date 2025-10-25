@@ -39,6 +39,7 @@ WORKDIR /app
 RUN apk add --no-cache --virtual .build-deps \
     build-base \
     python3 \
+    vips \
     vips-dev
 
 # First install dependencies (as they change less often)
@@ -87,7 +88,7 @@ ENV NODE_ENV=production
 # Prefer IPv4 DNS resolution
 ENV NODE_OPTIONS=--dns-result-order=ipv4first
 
-RUN apk update && apk add --no-cache vips-dev
+RUN apk update && apk add --no-cache vips vips-dev
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nextjs
