@@ -35,6 +35,12 @@ ENV NODE_OPTIONS=--dns-result-order=ipv4first
 
 WORKDIR /app
 
+# Build dependencies required to compile native modules like sharp on Alpine (musl)
+RUN apk add --no-cache --virtual .build-deps \
+    build-base \
+    python3 \
+    vips-dev
+
 # First install dependencies (as they change less often)
 COPY .gitignore .gitignore
 COPY --from=pruned /app/out/json/ .
@@ -49,6 +55,7 @@ RUN \
 # Because of yarn v1 install sharp explicitly with "--ignore-engines". See https://github.com/lovell/sharp/issues/3871
 RUN \
     --mount=type=cache,target=/usr/local/share/.cache/yarn/v6,sharing=locked \
+    npm_config_os=linux npm_config_libc=musl npm_config_arch=x64 \
     yarn workspace ${WORKSPACE} add sharp --ignore-engines --prefer-offline --frozen-lockfile --network-timeout 600000 --network-concurrency 2
 
 # Build the project and its dependencies
@@ -72,6 +79,9 @@ RUN turbo run build --filter=${WORKSPACE}
 FROM base AS runner
 ARG APP
 ARG WORKSPACE
+ARG APP_PUBLIC_URL
+ARG STRAPI_URL
+ARG STRAPI_REST_READONLY_API_KEY
 ENV NODE_ENV=production
 
 # Prefer IPv4 DNS resolution
